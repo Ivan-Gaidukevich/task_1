@@ -27,17 +27,38 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
+          pip install pytest
 
       - name: Run tests
-        id: test1
+        id: tests
         run: |
-          PYTHONPATH=$PWD pytest private_tests/tests/tests_all.py -q --tb=no
-        continue-on-error: true
+          # Запуск всех тестов в verbose, показываем все имена
+          PYTHONPATH=$PWD pytest private_tests/tests/tests_all.py \
+            -v --maxfail=0 --tb=short --disable-warnings \
+            --junitxml=test_results.xml || true
 
       - name: Calculate score
+        id: score
         run: |
-          SCORE=0
-          if [ "${{ steps.test1.outcome }}" == "success" ]; then SCORE=$((SCORE+20)); fi
-          echo "Score: $SCORE/20"
+          # Считаем score по специальной переменной в тестах
+          SCORE=$(python3 -c "
+          import pytest, sys
+          from _pytest.config import get_config
+          from private_tests.tests import tests_all
 
+          config = get_config()
+          pytest.main(['private_tests/tests/tests_all.py', '--maxfail=0', '--tb=short'])
+          score = getattr(config, 'total_score', 0)
+          print(score)
+          ")
+          echo "Score: $SCORE/20"
+          echo "SCORE=$SCORE" >> $GITHUB_ENV
+
+      - name: Badge
+        run: |
+          if [ "$SCORE" -eq 20 ]; then
+            echo "All tests passed ✅"
+          else
+            echo "Some tests failed ❌"
+          fi
       

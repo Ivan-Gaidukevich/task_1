@@ -28,9 +28,10 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-      - name: Run test 1
+      - name: Run tests
         id: test1
-        run: pytest private_tests/tests/tests_all.py
+        run: |
+          PYTHONPATH=$PWD pytest private_tests/tests/tests_all.py
         continue-on-error: true
 
       - name: Calculate score

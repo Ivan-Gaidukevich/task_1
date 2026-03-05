@@ -1,3 +1,6 @@
+import numpy as np
+
+
 def trim_mean_dive(points: np.array, hard_coef: float = 1.2) -> float:
     """
     Расчет итоговой оценки за прыжок в воду.

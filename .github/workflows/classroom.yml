@@ -27,6 +27,13 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
+          pip install flake8
+
+      - name: Check PEP8
+        id: pep8
+        run: |
+          flake8 .
+        continue-on-error: true
 
       - name: Run tests
         id: test1
